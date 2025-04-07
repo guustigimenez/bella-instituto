@@ -20,9 +20,9 @@ export default function ClientList({ clientes }) {
       />
       {clientesFiltrados.map((c) => (
         <div key={c.id} style={{ marginBottom: '1rem' }}>
-          <strong>{c.nombre} {c.apellido}</strong> - {c.tratamiento} - ${c.monto} <br />
+          <strong>{c.nombre} {c.apellido}</strong> <br />
           <small>{c.email} - Edad: {c.edad}</small><br />
-          <small>{c.fecha.toDate().toLocaleString()}</small>
+          <small>Fecha ingreso: {c.fecha.toDate().toLocaleString()}</small>
         </div>
       ))}
     </div>

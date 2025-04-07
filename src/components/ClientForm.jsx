@@ -11,8 +11,6 @@ export default function ClientForm({ onClienteAgregado }) {
     edad: '',
     domicilio: '',
     email: '',
-    tratamiento: '',
-    monto: '',
   });
 
   const handleChange = (e) => {
@@ -40,8 +38,6 @@ export default function ClientForm({ onClienteAgregado }) {
       edad: '',
       domicilio: '',
       email: '',
-      tratamiento: '',
-      monto: '',
     });
 
     setMostrarFormulario(false);
@@ -61,8 +57,6 @@ export default function ClientForm({ onClienteAgregado }) {
           <input name="edad" placeholder="Edad" type="number" value={form.edad} onChange={handleChange} />
           <input name="domicilio" placeholder="Domicilio" value={form.domicilio} onChange={handleChange} />
           <input name="email" placeholder="Email" type="email" value={form.email} onChange={handleChange} />
-          <input name="tratamiento" placeholder="Tratamiento" value={form.tratamiento} onChange={handleChange} />
-          <input name="monto" placeholder="Monto $" type="number" value={form.monto} onChange={handleChange} />
 
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button type="submit">Guardar Cliente</button>
