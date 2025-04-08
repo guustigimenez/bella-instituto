@@ -1,6 +1,8 @@
 // src/pages/Landing.jsx
 import { Link } from 'react-router-dom';
 
+import CalendarioSemanal from '../components/CalendarioSemanal';
+
 export default function Landing() {
   return (
     <div>
@@ -21,6 +23,7 @@ export default function Landing() {
           Ir a Gestión de Clientes
         </button>
       </Link>
+      <CalendarioSemanal />
     </div>
   );
 }
