@@ -24,10 +24,32 @@ export default function Clientes() {
   };
 
   return (
-    <div>
-      <h2>Gestión de Clientes</h2>
+    <div
+      style={{
+        maxWidth: '900px',
+        margin: '2rem auto',
+        padding: '2rem',
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      <h2
+        style={{
+          fontSize: '1.8rem',
+          color: '#e91e63',
+          marginBottom: '1.5rem',
+          borderBottom: '2px solid #e91e63',
+          paddingBottom: '0.5rem',
+        }}
+      >
+        📋 Gestión de Clientes
+      </h2>
+
       <ClientForm onClienteAgregado={agregarCliente} />
-      <hr style={{ margin: '2rem 0' }} />
+
+      <hr style={{ margin: '2rem 0', borderColor: '#eee' }} />
+
       <ClientList clientes={clientes} />
     </div>
   );

@@ -1,4 +1,3 @@
-// src/components/ClientForm.jsx
 import { useState } from 'react';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -11,6 +10,7 @@ export default function ClientForm({ onClienteAgregado }) {
     edad: '',
     domicilio: '',
     email: '',
+    telefono: '',
   });
 
   const handleChange = (e) => {
@@ -19,51 +19,65 @@ export default function ClientForm({ onClienteAgregado }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const cliente = {
       ...form,
       edad: parseInt(form.edad),
-      monto: parseFloat(form.monto),
       fecha: Timestamp.now(),
     };
-
     const docRef = await addDoc(collection(db, 'clientes'), cliente);
-
-    // Notificar al componente padre
     onClienteAgregado({ id: docRef.id, ...cliente });
-
     setForm({
       nombre: '',
       apellido: '',
       edad: '',
       domicilio: '',
       email: '',
+      telefono: '',
     });
-
     setMostrarFormulario(false);
     alert('Cliente registrado con éxito');
   };
 
   return (
-    <div>
+    <div className="mb-6">
       {!mostrarFormulario ? (
-        <button onClick={() => setMostrarFormulario(true)} style={estiloBoton}>
+        <button
+          onClick={() => setMostrarFormulario(true)}
+          className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition"
+        >
           Agregar Nuevo Cliente
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} />
-          <input name="apellido" placeholder="Apellido" value={form.apellido} onChange={handleChange} />
-          <input name="edad" placeholder="Edad" type="number" value={form.edad} onChange={handleChange} />
-          <input name="domicilio" placeholder="Domicilio" value={form.domicilio} onChange={handleChange} />
-          <input name="email" placeholder="Email" type="email" value={form.email} onChange={handleChange} />
-
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <button type="submit">Guardar Cliente</button>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white shadow-md rounded p-6 space-y-4"
+        >
+          {[
+            { name: 'nombre', label: 'Nombre' },
+            { name: 'apellido', label: 'Apellido' },
+            { name: 'edad', label: 'Edad', type: 'number' },
+            { name: 'domicilio', label: 'Domicilio' },
+            { name: 'email', label: 'Email', type: 'email' },
+            { name: 'telefono', label: 'Teléfono' },
+          ].map(({ name, label, type = 'text' }) => (
+            <input
+              key={name}
+              name={name}
+              placeholder={label}
+              type={type}
+              value={form[name]}
+              onChange={handleChange}
+              className="w-full border border-gray-300 p-2 rounded"
+            />
+          ))}
+          <div className="flex gap-4">
+            <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+              Guardar Cliente
+            </button>
             <button
               type="button"
               onClick={() => setMostrarFormulario(false)}
-              style={botonCancelar}
+              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
             >
               Cancelar
             </button>
@@ -73,22 +87,3 @@ export default function ClientForm({ onClienteAgregado }) {
     </div>
   );
 }
-
-const estiloBoton = {
-  padding: '0.75rem 1.5rem',
-  backgroundColor: '#e91e63',
-  color: 'white',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  marginBottom: '1rem'
-};
-
-const botonCancelar = {
-  backgroundColor: '#ccc',
-  color: '#333',
-  border: 'none',
-  borderRadius: '8px',
-  padding: '0.75rem',
-  cursor: 'pointer'
-};

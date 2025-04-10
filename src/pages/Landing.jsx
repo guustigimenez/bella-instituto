@@ -10,19 +10,6 @@ export default function Landing() {
       <p>
         Gestioná los tratamientos y clientes de tu centro de belleza de forma rápida, ordenada y segura.
       </p>
-      <Link to="/clientes">
-        <button style={{
-          padding: '0.75rem 1.5rem',
-          backgroundColor: '#e91e63',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          marginTop: '1rem',
-          cursor: 'pointer'
-        }}>
-          Ir a Gestión de Clientes
-        </button>
-      </Link>
       <CalendarioSemanal />
     </div>
   );

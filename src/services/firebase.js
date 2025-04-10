@@ -1,14 +1,10 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -24,3 +20,16 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+
+// Función para actualizar un cliente en Firebase
+export async function actualizarClienteEnFirebase(cliente) {
+  const clienteRef = doc(db, "clientes", cliente.id);
+  await updateDoc(clienteRef, {
+    nombre: cliente.nombre,
+    apellido: cliente.apellido,
+    email: cliente.email,
+    telefono: cliente.telefono,
+    domicilio: cliente.domicilio,
+    edad: cliente.edad,
+  });
+}
