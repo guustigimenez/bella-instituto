@@ -8,7 +8,8 @@ import {
   PencilIcon
 } from 'lucide-react';
 import ModalEditClient from "./ModalEditClient";
-import { actualizarClienteEnFirebase } from '../services/firebase'; // Asegurate de tener esta función
+import { actualizarClienteEnFirebase } from '../services/firebase';
+import { toast } from 'react-toastify';
 
 export default function ClientList({ clientes: clientesProp }) {
   const [clientes, setClientes] = useState([]);
@@ -29,13 +30,16 @@ export default function ClientList({ clientes: clientesProp }) {
   const guardarClienteEditado = async (clienteActualizado) => {
     try {
       await actualizarClienteEnFirebase(clienteActualizado);
-
+  
       const nuevosClientes = clientes.map((c) =>
         c.id === clienteActualizado.id ? clienteActualizado : c
       );
       setClientes(nuevosClientes);
+  
+      toast.success("Cliente actualizado correctamente");
     } catch (error) {
       console.error("Error al actualizar cliente en Firebase:", error);
+      toast.error("Error al actualizar el cliente");
     }
   };
 
@@ -49,7 +53,6 @@ export default function ClientList({ clientes: clientesProp }) {
         <UserIcon className="text-pink-700" size={24} />
         Historial de Clientes
       </h2>
-
       <input
         type="text"
         placeholder="Buscar por nombre o apellido..."

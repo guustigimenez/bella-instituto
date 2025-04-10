@@ -6,7 +6,9 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
-import { db } from '../services/firebase'; // Asegurate de importar tu instancia de Firebase
+import { db } from '../services/firebase';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function AdminClientes() {
   const [clientes, setClientes] = useState([]);
@@ -43,8 +45,10 @@ export default function AdminClientes() {
         prev.map(c => (c.id === id ? { ...formData, id } : c))
       );
       setEditando(null);
+      toast.success('Cliente actualizado con éxito');
     } catch (error) {
       console.error('❌ Error al guardar cliente:', error);
+      toast.error('Hubo un error al guardar los cambios');
     }
   };
 
@@ -52,149 +56,120 @@ export default function AdminClientes() {
     try {
       await deleteDoc(doc(db, 'clientes', id));
       setClientes(prev => prev.filter(c => c.id !== id));
+      toast.info('Cliente eliminado');
     } catch (error) {
       console.error('❌ Error al eliminar cliente:', error);
+      toast.error('No se pudo eliminar el cliente');
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Administrar Clientes</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#f0f0f0' }}>
-            <th style={th}>Nombre</th>
-            <th style={th}>Apellido</th>
-            <th style={th}>Email</th>
-            <th style={th}>Teléfono</th>
-            <th style={th}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {clientes.map((cliente) => (
-            <tr key={cliente.id}>
-              <td style={td}>
-                {editando === cliente.id ? (
-                  <input
-                    value={formData.nombre || ''}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, nombre: e.target.value }))
-                    }
-                  />
-                ) : (
-                  cliente.nombre
-                )}
-              </td>
-              <td style={td}>
-                {editando === cliente.id ? (
-                  <input
-                    value={formData.apellido || ''}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, apellido: e.target.value }))
-                    }
-                  />
-                ) : (
-                  cliente.apellido
-                )}
-              </td>
-              <td style={td}>
-                {editando === cliente.id ? (
-                  <input
-                    value={formData.email || ''}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, email: e.target.value }))
-                    }
-                  />
-                ) : (
-                  cliente.email
-                )}
-              </td>
-              <td style={td}>
-                {editando === cliente.id ? (
-                  <input
-                    value={formData.telefono || ''}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, telefono: e.target.value }))
-                    }
-                  />
-                ) : (
-                  cliente.telefono || '-'
-                )}
-              </td>
-              <td style={td}>
-                {editando === cliente.id ? (
-                  <>
-                    <button onClick={() => handleGuardar(cliente.id)} style={btnSave}>
-                      Guardar
-                    </button>
-                    <button onClick={() => setEditando(null)} style={btnCancel}>
-                      Cancelar
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => handleEditar(cliente.id)} style={btnEdit}>
-                      Editar
-                    </button>
-                    <button onClick={() => handleEliminar(cliente.id)} style={btnDelete}>
-                      Eliminar
-                    </button>
-                  </>
-                )}
-              </td>
+    <div className="p-8 max-w-5xl mx-auto">
+      <h2 className="text-2xl font-bold text-pink-700 mb-6">Administrar Clientes</h2>
+      <div className="overflow-x-auto bg-white rounded-xl shadow p-6">
+        <table className="min-w-full text-sm text-left">
+          <thead className="bg-pink-100 text-pink-700 font-semibold">
+            <tr>
+              <th className="px-4 py-2">Nombre</th>
+              <th className="px-4 py-2">Apellido</th>
+              <th className="px-4 py-2">Email</th>
+              <th className="px-4 py-2">Teléfono</th>
+              <th className="px-4 py-2">Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {clientes.map((cliente) => (
+              <tr key={cliente.id} className="border-b last:border-b-0">
+                <td className="px-4 py-2">
+                  {editando === cliente.id ? (
+                    <input
+                      value={formData.nombre || ''}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, nombre: e.target.value }))
+                      }
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    cliente.nombre
+                  )}
+                </td>
+                <td className="px-4 py-2">
+                  {editando === cliente.id ? (
+                    <input
+                      value={formData.apellido || ''}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, apellido: e.target.value }))
+                      }
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    cliente.apellido
+                  )}
+                </td>
+                <td className="px-4 py-2">
+                  {editando === cliente.id ? (
+                    <input
+                      value={formData.email || ''}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, email: e.target.value }))
+                      }
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    cliente.email
+                  )}
+                </td>
+                <td className="px-4 py-2">
+                  {editando === cliente.id ? (
+                    <input
+                      value={formData.telefono || ''}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, telefono: e.target.value }))
+                      }
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    cliente.telefono || '-'
+                  )}
+                </td>
+                <td className="px-4 py-2 space-x-2">
+                  {editando === cliente.id ? (
+                    <>
+                      <button
+                        onClick={() => handleGuardar(cliente.id)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        onClick={() => setEditando(null)}
+                        className="bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleEditar(cliente.id)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleEliminar(cliente.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
-
-const th = {
-  textAlign: 'left',
-  padding: '0.5rem',
-  borderBottom: '1px solid #ccc',
-};
-
-const td = {
-  padding: '0.5rem',
-  borderBottom: '1px solid #eee',
-};
-
-const btnEdit = {
-  backgroundColor: '#2196f3',
-  color: 'white',
-  border: 'none',
-  padding: '4px 8px',
-  marginRight: '4px',
-  cursor: 'pointer',
-  borderRadius: '4px',
-};
-
-const btnDelete = {
-  backgroundColor: '#f44336',
-  color: 'white',
-  border: 'none',
-  padding: '4px 8px',
-  cursor: 'pointer',
-  borderRadius: '4px',
-};
-
-const btnSave = {
-  backgroundColor: '#4caf50',
-  color: 'white',
-  border: 'none',
-  padding: '4px 8px',
-  marginRight: '4px',
-  cursor: 'pointer',
-  borderRadius: '4px',
-};
-
-const btnCancel = {
-  backgroundColor: '#9e9e9e',
-  color: 'white',
-  border: 'none',
-  padding: '4px 8px',
-  cursor: 'pointer',
-  borderRadius: '4px',
-};
