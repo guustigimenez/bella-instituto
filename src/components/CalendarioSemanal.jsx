@@ -234,7 +234,7 @@ export default function CalendarioSemanal() {
                 key={cliente.id}
                 onClick={() => {
                   const nombreCompleto = `${cliente.nombre} ${cliente.apellido}`;
-                  setNuevoTurno({ ...nuevoTurno, cliente: nombreCompleto, clienteId: cliente.id });
+                  setNuevoTurno(prev => ({ ...prev, cliente: nombreCompleto, clienteId: cliente.id }));
                   setBusquedaCliente(nombreCompleto);
                   setClienteFiltrado([]);
                 }}
@@ -250,7 +250,7 @@ export default function CalendarioSemanal() {
           type="text"
           placeholder="Tratamiento"
           value={nuevoTurno.tratamiento}
-          onChange={(e) => setNuevoTurno({ ...nuevoTurno, tratamiento: e.target.value })}
+          onChange={(e) => setNuevoTurno(prev => ({ ...prev, tratamiento: e.target.value }))}
           style={{ width: '100%', padding: '8px', marginTop: '10px', marginBottom: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
         />
 
@@ -258,7 +258,7 @@ export default function CalendarioSemanal() {
           type="number"
           placeholder="Valor"
           value={nuevoTurno.valor}
-          onChange={(e) => setNuevoTurno({ ...nuevoTurno, valor: e.target.value })}
+          onChange={(e) => setNuevoTurno(prev => ({ ...prev, valor: e.target.value }))}
           style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
         />
 
