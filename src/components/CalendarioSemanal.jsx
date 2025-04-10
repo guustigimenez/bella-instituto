@@ -111,10 +111,7 @@ export default function CalendarioSemanal() {
 
     try {
       const docRef = await addDoc(collection(db, 'turnos'), {
-        cliente: nuevoTurno.cliente,
-        clienteId: nuevoTurno.clienteId || null,
-        tratamiento: nuevoTurno.tratamiento,
-        valor: nuevoTurno.valor,
+        ...nuevoEvento,
         start: nuevoTurno.start.toISOString(),
         end: nuevoTurno.end.toISOString(),
         creado: new Date().toISOString(),
@@ -176,7 +173,9 @@ export default function CalendarioSemanal() {
         startAccessor="start"
         endAccessor="end"
         selectable
-        onSelectSlot={handleSelectSlot}
+        onSelectSlot={(slotInfo) => {
+          if (!modalAbierto) handleSelectSlot(slotInfo);
+        }}
         onSelectEvent={handleSelectEvent}
         tooltipAccessor={(event) =>
           `Cliente: ${event.cliente}\nTratamiento: ${event.tratamiento}\nValor: $${event.valor}`
@@ -193,6 +192,7 @@ export default function CalendarioSemanal() {
       <Modal
         isOpen={modalAbierto}
         onRequestClose={() => setModalAbierto(false)}
+        shouldCloseOnOverlayClick={false}
         style={{
           content: {
             padding: '2rem',
@@ -263,8 +263,8 @@ export default function CalendarioSemanal() {
         />
 
         <p>
-          Desde: {format(nuevoTurno.start, 'dd/MM/yyyy HH:mm')} <br />
-          Hasta: {format(nuevoTurno.end, 'HH:mm')}
+          Desde: {nuevoTurno.start ? format(nuevoTurno.start, 'dd/MM/yyyy HH:mm') : '—'} <br />
+          Hasta: {nuevoTurno.end ? format(nuevoTurno.end, 'HH:mm') : '—'}
         </p>
 
         <div style={{ marginTop: '1rem' }}>
