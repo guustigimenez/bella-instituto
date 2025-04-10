@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import TurnoForm from './TurnoForm';
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -38,6 +39,7 @@ export default function CalendarioSemanal() {
   const [clientes, setClientes] = useState([]);
   const [clienteFiltrado, setClienteFiltrado] = useState([]);
   const [busquedaCliente, setBusquedaCliente] = useState('');
+  const [tratamientos, setTratamientos] = useState([]);
 
   useEffect(() => {
     const cargarClientes = async () => {
@@ -67,6 +69,21 @@ export default function CalendarioSemanal() {
     cargarClientes();
     cargarTurnos();
   }, []);
+
+useEffect(() => {
+  const cargarTratamientos = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'tratamientos'));
+      const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log('Tratamientos desde Firebase:', lista);
+      setTratamientos(lista);
+    } catch (error) {
+      console.error('Error al cargar tratamientos:', error);
+    }
+  };
+
+  cargarTratamientos();
+}, []);
 
   const handleSelectSlot = ({ start, end }) => {
     setNuevoTurno({
@@ -207,123 +224,17 @@ export default function CalendarioSemanal() {
         }}
       />
 
-      <Modal
+      <TurnoForm
         isOpen={modalAbierto}
-        onRequestClose={() => setModalAbierto(false)}
-        shouldCloseOnOverlayClick={false}
-        style={{
-          content: {
-            padding: '2rem',
-            borderRadius: '10px',
-            maxWidth: '500px',
-            margin: 'auto',
-            boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
-            backgroundColor: '#fff',
-          },
-          overlay: {
-            backgroundColor: 'rgba(0,0,0,0.3)',
-          },
-        }}
-      >
-        <h3 style={{ marginBottom: '1rem' }}>Nuevo Turno</h3>
-
-        <input
-          type="text"
-          placeholder="Buscar cliente por nombre o email"
-          value={busquedaCliente}
-          onChange={(e) => {
-            const texto = e.target.value.toLowerCase();
-            setBusquedaCliente(texto);
-            const resultados = clientes.filter(
-              (c) =>
-                c.nombre?.toLowerCase().includes(texto) ||
-                c.apellido?.toLowerCase().includes(texto) ||
-                c.email?.toLowerCase().includes(texto)
-            );
-            setClienteFiltrado(resultados);
-          }}
-          style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
-        />
-
-        {clienteFiltrado.length > 0 && (
-          <div style={{ border: '1px solid #ccc', borderRadius: '4px', maxHeight: '150px', overflowY: 'auto', background: '#fff' }}>
-            {clienteFiltrado.map((cliente) => (
-              <div
-                key={cliente.id}
-                onClick={() => {
-                  const nombreCompleto = `${cliente.nombre} ${cliente.apellido}`;
-                  setNuevoTurno(prev => ({ ...prev, cliente: nombreCompleto, clienteId: cliente.id }));
-                  setBusquedaCliente(nombreCompleto);
-                  setClienteFiltrado([]);
-                }}
-                style={{ padding: '0.5rem', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-              >
-                {cliente.nombre} {cliente.apellido} – {cliente.email}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <input
-          type="text"
-          placeholder="Tratamiento"
-          value={nuevoTurno.tratamiento}
-          onChange={(e) => setNuevoTurno(prev => ({ ...prev, tratamiento: e.target.value }))}
-          style={{ width: '100%', padding: '8px', marginTop: '10px', marginBottom: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
-        />
-
-        <input
-          type="number"
-          placeholder="Valor"
-          min="0"
-          value={nuevoTurno.valor || ''}
-          onChange={(e) => {
-            const valorNumerico = parseFloat(e.target.value);
-            setNuevoTurno(prev => ({
-              ...prev,
-              valor: isNaN(valorNumerico) ? '' : valorNumerico,
-            }));
-          }}
-          style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
-        />
-
-        <p>
-          Desde: {nuevoTurno.start ? format(nuevoTurno.start, 'dd/MM/yyyy HH:mm') : '—'} <br />
-          Hasta: {nuevoTurno.end ? format(nuevoTurno.end, 'HH:mm') : '—'}
-        </p>
-
-        <div style={{ marginTop: '1rem' }}>
-          {!nuevoTurno.id ? (
-            <button
-              onClick={guardarTurno}
-              style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: '#e91e63', color: 'white', border: 'none', marginRight: '1rem' }}
-            >
-              Guardar Turno
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={actualizarTurno}
-                style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: '#2196f3', color: 'white', border: 'none', marginRight: '1rem' }}
-              >
-                Actualizar Turno
-              </button>
-              <button
-                onClick={eliminarTurno}
-                style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: '#f44336', color: 'white', border: 'none', marginRight: '1rem' }}
-              >
-                Eliminar Turno
-              </button>
-            </>
-          )}
-          <button
-            onClick={() => setModalAbierto(false)}
-            style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: '#ccc', border: 'none' }}
-          >
-            Cancelar
-          </button>
-        </div>
-      </Modal>
+        onClose={() => setModalAbierto(false)}
+        onGuardar={guardarTurno}
+        onActualizar={actualizarTurno}
+        onEliminar={eliminarTurno}
+        turno={nuevoTurno}
+        setTurno={setNuevoTurno}
+        clientes={clientes}
+        tratamientos={tratamientos}
+      />
     </div>
   );
 }
