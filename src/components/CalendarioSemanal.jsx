@@ -99,11 +99,20 @@ export default function CalendarioSemanal() {
   };
 
   const guardarTurno = async () => {
+    if (
+      !nuevoTurno.valor ||
+      isNaN(nuevoTurno.valor) ||
+      Number(nuevoTurno.valor) <= 0
+    ) {
+      alert('Por favor ingresá un valor numérico mayor a cero para el tratamiento.');
+      return;
+    }
+
     const nuevoEvento = {
       cliente: nuevoTurno.cliente,
       clienteId: nuevoTurno.clienteId,
       tratamiento: nuevoTurno.tratamiento,
-      valor: nuevoTurno.valor,
+      valor: Number(nuevoTurno.valor),
       title: `${nuevoTurno.cliente} - ${nuevoTurno.tratamiento}`,
       start: nuevoTurno.start,
       end: nuevoTurno.end,
@@ -126,12 +135,21 @@ export default function CalendarioSemanal() {
   const actualizarTurno = async () => {
     if (!nuevoTurno.id) return;
 
+    if (
+      !nuevoTurno.valor ||
+      isNaN(nuevoTurno.valor) ||
+      Number(nuevoTurno.valor) <= 0
+    ) {
+      alert('Por favor ingresá un valor numérico mayor a cero para el tratamiento.');
+      return;
+    }
+
     const turnoRef = doc(db, 'turnos', nuevoTurno.id);
     const eventoActualizado = {
       cliente: nuevoTurno.cliente,
       clienteId: nuevoTurno.clienteId,
       tratamiento: nuevoTurno.tratamiento,
-      valor: nuevoTurno.valor,
+      valor: Number(nuevoTurno.valor),
       start: nuevoTurno.start.toISOString(),
       end: nuevoTurno.end.toISOString(),
     };
@@ -257,8 +275,15 @@ export default function CalendarioSemanal() {
         <input
           type="number"
           placeholder="Valor"
-          value={nuevoTurno.valor}
-          onChange={(e) => setNuevoTurno(prev => ({ ...prev, valor: e.target.value }))}
+          min="0"
+          value={nuevoTurno.valor || ''}
+          onChange={(e) => {
+            const valorNumerico = parseFloat(e.target.value);
+            setNuevoTurno(prev => ({
+              ...prev,
+              valor: isNaN(valorNumerico) ? '' : valorNumerico,
+            }));
+          }}
           style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
         />
 

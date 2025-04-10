@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import Clientes from './pages/Clientes';
 import AdminClientes from './pages/AdminClientes';
+import Tratamientos from './pages/Tratamientos';
 import './App.css'; // ⬅️ Asegurate de importar el CSS
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/adminClientes" element={<AdminClientes />} />
+          <Route path="/tratamientos" element={<Tratamientos />} />
         </Routes>
       </div>
     </div>
