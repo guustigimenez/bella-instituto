@@ -63,7 +63,9 @@ export default function CalendarioSemanal() {
 
     const cargarTratamientos = async () => {
       const snapshot = await getDocs(collection(db, 'tratamientos'));
-      const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const lista = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
       setTratamientos(lista);
     };
 
