@@ -1,3 +1,4 @@
+// src/components/TurnoForm.jsx
 import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import { format } from 'date-fns';
@@ -17,7 +18,8 @@ export default function TurnoForm({
 }) {
   const [busquedaCliente, setBusquedaCliente] = useState('');
   const [clienteFiltrado, setClienteFiltrado] = useState([]);
-  
+  const [tratamientoSeleccionadoId, setTratamientoSeleccionadoId] = useState('');
+
   useEffect(() => {
     if (turno.cliente) {
       setBusquedaCliente(turno.cliente);
@@ -28,31 +30,12 @@ export default function TurnoForm({
   }, [turno]);
 
   useEffect(() => {
-    if (!turno.valorBase) return;
-  
-    let valorFinal = turno.valorBase;
-  
-    if (turno.tipoDescuento && turno.descuento) {
-      if (turno.tipoDescuento === 'fijo') {
-        valorFinal = turno.valorBase - turno.descuento;
-      } else if (turno.tipoDescuento === 'porcentaje') {
-        valorFinal = turno.valorBase * (1 - turno.descuento / 100);
-      }
-    }
-  
-    setTurno(prev => ({
-      ...prev,
-      valor: Math.max(0, Math.round(valorFinal)),
-    }));
-  }, [turno.valorBase, turno.tipoDescuento, turno.descuento]);
-
-  const handleCambioValor = (e) => {
-    const valorNumerico = parseFloat(e.target.value);
-    setTurno(prev => ({
-      ...prev,
-      valor: isNaN(valorNumerico) ? '' : valorNumerico,
-    }));
-  };
+    const total = (turno.tratamientosAplicados || []).reduce(
+      (acc, t) => acc + Number(t.valor),
+      0
+    );
+    setTurno((prev) => ({ ...prev, valor: total }));
+  }, [turno.tratamientosAplicados]);
 
   return (
     <Modal
@@ -73,9 +56,7 @@ export default function TurnoForm({
         },
       }}
     >
-      <h3 style={{ marginBottom: '1rem' }}>
-        {turno.id ? 'Editar Turno' : 'Nuevo Turno'}
-      </h3>
+      <h3 style={{ marginBottom: '1rem' }}>{turno.id ? 'Editar Turno' : 'Nuevo Turno'}</h3>
 
       <input
         type="text"
@@ -92,43 +73,21 @@ export default function TurnoForm({
           );
           setClienteFiltrado(resultados);
         }}
-        style={{
-          width: '100%',
-          padding: '8px',
-          marginBottom: '10px',
-          borderRadius: '6px',
-          border: '1px solid #ccc',
-        }}
+        style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
       />
 
       {clienteFiltrado.length > 0 && (
-        <div
-          style={{
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            maxHeight: '150px',
-            overflowY: 'auto',
-            background: '#fff',
-          }}
-        >
+        <div style={{ border: '1px solid #ccc', borderRadius: '4px', maxHeight: '150px', overflowY: 'auto' }}>
           {clienteFiltrado.map((cliente) => (
             <div
               key={cliente.id}
               onClick={() => {
                 const nombreCompleto = `${cliente.nombre} ${cliente.apellido}`;
-                setTurno((prev) => ({
-                  ...prev,
-                  cliente: nombreCompleto,
-                  clienteId: cliente.id,
-                }));
+                setTurno((prev) => ({ ...prev, cliente: nombreCompleto, clienteId: cliente.id }));
                 setBusquedaCliente(nombreCompleto);
                 setClienteFiltrado([]);
               }}
-              style={{
-                padding: '0.5rem',
-                cursor: 'pointer',
-                borderBottom: '1px solid #eee',
-              }}
+              style={{ padding: '0.5rem', cursor: 'pointer', borderBottom: '1px solid #eee' }}
             >
               {cliente.nombre} {cliente.apellido} – {cliente.email}
             </div>
@@ -136,151 +95,61 @@ export default function TurnoForm({
         </div>
       )}
 
-        <select
-        value={turno.tratamientoId || ''}
-        onChange={(e) => {
-            const id = e.target.value;
-            const tratamiento = tratamientos.find(t => t.id === id);
-            if (tratamiento) {
-            setTurno(prev => ({
-                ...prev,
-                tratamientoId: id,
-                tratamiento: tratamiento.nombre,
-                valorBase: tratamiento.valor,
-                valor: tratamiento.valor, // Por si no hay descuento
-            }));
-            }
-        }}
-        style={{
-            width: '100%',
-            padding: '8px',
-            marginBottom: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-        }}
-        >
+      <select
+        value={tratamientoSeleccionadoId}
+        onChange={(e) => setTratamientoSeleccionadoId(e.target.value)}
+        style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+      >
         <option value="">Seleccionar tratamiento</option>
         {tratamientos.map((t) => (
-            <option key={t.id} value={t.id}>
-            {t.nombre} – ${t.valor}
-            </option>
+          <option key={t.id} value={t.id}>{t.nombre} – ${t.valor}</option>
         ))}
-        </select>
+      </select>
+
+      <button
+        onClick={() => {
+          const t = tratamientos.find((x) => x.id === tratamientoSeleccionadoId);
+          if (t) {
+            setTurno((prev) => ({
+              ...prev,
+              tratamientosAplicados: [...(prev.tratamientosAplicados || []), t]
+            }));
+            setTratamientoSeleccionadoId('');
+          }
+        }}
+        style={{ width: '100%', padding: '8px', marginBottom: '20px', backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: '6px' }}
+      >
+        Agregar Tratamiento
+      </button>
+
+      <ul style={{ marginBottom: '20px' }}>
+        {(turno.tratamientosAplicados || []).map((t, index) => (
+          <li key={index}>{t.nombre} – ${t.valor}</li>
+        ))}
+      </ul>
 
       <input
         type="number"
-        value={turno.valor || ''}
+        value={turno.valor || 0}
         disabled
-        style={{
-            width: '100%',
-            padding: '8px',
-            marginBottom: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            backgroundColor: '#f0f0f0',
-        }}
-        />
-
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '10px' }}>
-        <select
-            value={turno.tipoDescuento || ''}
-            onChange={(e) =>
-            setTurno(prev => ({ ...prev, tipoDescuento: e.target.value }))
-            }
-            style={{
-            flex: 1,
-            padding: '8px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            }}
-        >
-            <option value="">Sin descuento</option>
-            <option value="fijo">Descuento fijo ($)</option>
-            <option value="porcentaje">Descuento %</option>
-        </select>
-
-        <input
-            type="number"
-            placeholder="Descuento"
-            value={turno.descuento || ''}
-            onChange={(e) =>
-            setTurno(prev => ({
-                ...prev,
-                descuento: parseFloat(e.target.value),
-            }))
-            }
-            disabled={!turno.tipoDescuento}
-            style={{
-            flex: 1,
-            padding: '8px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            }}
-        />
-        </div>
+        style={{ width: '100%', padding: '8px', marginBottom: '10px', background: '#f0f0f0' }}
+      />
 
       <p>
-        Desde: {turno.start ? format(turno.start, 'dd/MM/yyyy HH:mm') : '—'}
-        <br />
+        Desde: {turno.start ? format(turno.start, 'dd/MM/yyyy HH:mm') : '—'}<br />
         Hasta: {turno.end ? format(turno.end, 'HH:mm') : '—'}
       </p>
 
       <div style={{ marginTop: '1rem' }}>
         {!turno.id ? (
-          <button
-            onClick={onGuardar}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '6px',
-              backgroundColor: '#e91e63',
-              color: 'white',
-              border: 'none',
-              marginRight: '1rem',
-            }}
-          >
-            Guardar Turno
-          </button>
+          <button onClick={onGuardar} style={{ padding: '8px 12px', backgroundColor: '#e91e63', color: 'white', border: 'none', marginRight: '1rem' }}>Guardar Turno</button>
         ) : (
           <>
-            <button
-              onClick={onActualizar}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                backgroundColor: '#2196f3',
-                color: 'white',
-                border: 'none',
-                marginRight: '1rem',
-              }}
-            >
-              Actualizar Turno
-            </button>
-            <button
-              onClick={onEliminar}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                backgroundColor: '#f44336',
-                color: 'white',
-                border: 'none',
-                marginRight: '1rem',
-              }}
-            >
-              Eliminar Turno
-            </button>
+            <button onClick={onActualizar} style={{ padding: '8px 12px', backgroundColor: '#2196f3', color: 'white', border: 'none', marginRight: '1rem' }}>Actualizar Turno</button>
+            <button onClick={onEliminar} style={{ padding: '8px 12px', backgroundColor: '#f44336', color: 'white', border: 'none', marginRight: '1rem' }}>Eliminar Turno</button>
           </>
         )}
-        <button
-          onClick={onClose}
-          style={{
-            padding: '8px 12px',
-            borderRadius: '6px',
-            backgroundColor: '#ccc',
-            border: 'none',
-          }}
-        >
-          Cancelar
-        </button>
+        <button onClick={onClose} style={{ padding: '8px 12px', backgroundColor: '#ccc', border: 'none' }}>Cancelar</button>
       </div>
     </Modal>
   );

@@ -7,7 +7,6 @@ import getDay from 'date-fns/getDay';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { es } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
-import Modal from 'react-modal';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import TurnoForm from './TurnoForm';
@@ -21,24 +20,20 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-Modal.setAppElement('#root');
-
 export default function CalendarioSemanal() {
   const [eventos, setEventos] = useState([]);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [nuevoTurno, setNuevoTurno] = useState({
     cliente: '',
     clienteId: null,
-    tratamiento: '',
-    valor: '',
+    tratamientosAplicados: [],
+    valor: 0,
     start: null,
     end: null,
     id: null,
   });
 
   const [clientes, setClientes] = useState([]);
-  const [clienteFiltrado, setClienteFiltrado] = useState([]);
-  const [busquedaCliente, setBusquedaCliente] = useState('');
   const [tratamientos, setTratamientos] = useState([]);
 
   useEffect(() => {
@@ -56,9 +51,9 @@ export default function CalendarioSemanal() {
           id: doc.id,
           cliente: data.cliente,
           clienteId: data.clienteId,
-          tratamiento: data.tratamiento,
-          valor: data.valor,
-          title: `${data.cliente} - ${data.tratamiento}`,
+          tratamientosAplicados: data.tratamientosAplicados || [],
+          valor: data.valor || 0,
+          title: `${data.cliente} - ${(data.tratamientosAplicados || []).map(t => t.nombre).join(', ')}`,
           start: new Date(data.start),
           end: new Date(data.end),
         };
@@ -66,37 +61,27 @@ export default function CalendarioSemanal() {
       setEventos(turnos);
     };
 
-    cargarClientes();
-    cargarTurnos();
-  }, []);
-
-useEffect(() => {
-  const cargarTratamientos = async () => {
-    try {
+    const cargarTratamientos = async () => {
       const snapshot = await getDocs(collection(db, 'tratamientos'));
       const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log('Tratamientos desde Firebase:', lista);
       setTratamientos(lista);
-    } catch (error) {
-      console.error('Error al cargar tratamientos:', error);
-    }
-  };
+    };
 
-  cargarTratamientos();
-}, []);
+    cargarClientes();
+    cargarTurnos();
+    cargarTratamientos();
+  }, []);
 
   const handleSelectSlot = ({ start, end }) => {
     setNuevoTurno({
       cliente: '',
       clienteId: null,
-      tratamiento: '',
-      valor: '',
+      tratamientosAplicados: [],
+      valor: 0,
       start,
       end,
       id: null,
     });
-    setBusquedaCliente('');
-    setClienteFiltrado([]);
     setModalAbierto(true);
   };
 
@@ -104,33 +89,27 @@ useEffect(() => {
     setNuevoTurno({
       cliente: evento.cliente,
       clienteId: evento.clienteId,
-      tratamiento: evento.tratamiento,
-      valor: evento.valor,
+      tratamientosAplicados: evento.tratamientosAplicados || [],
+      valor: evento.valor || 0,
       start: new Date(evento.start),
       end: new Date(evento.end),
       id: evento.id,
     });
-    setBusquedaCliente(evento.cliente || '');
-    setClienteFiltrado([]);
     setModalAbierto(true);
   };
 
   const guardarTurno = async () => {
-    if (
-      !nuevoTurno.valor ||
-      isNaN(nuevoTurno.valor) ||
-      Number(nuevoTurno.valor) <= 0
-    ) {
-      alert('Por favor ingresá un valor numérico mayor a cero para el tratamiento.');
+    if (!nuevoTurno.tratamientosAplicados || nuevoTurno.tratamientosAplicados.length === 0) {
+      alert('Debes agregar al menos un tratamiento.');
       return;
     }
 
     const nuevoEvento = {
       cliente: nuevoTurno.cliente,
       clienteId: nuevoTurno.clienteId,
-      tratamiento: nuevoTurno.tratamiento,
-      valor: Number(nuevoTurno.valor),
-      title: `${nuevoTurno.cliente} - ${nuevoTurno.tratamiento}`,
+      tratamientosAplicados: nuevoTurno.tratamientosAplicados,
+      valor: nuevoTurno.valor,
+      title: `${nuevoTurno.cliente} - ${nuevoTurno.tratamientosAplicados.map(t => t.nombre).join(', ')}`,
       start: nuevoTurno.start,
       end: nuevoTurno.end,
     };
@@ -151,13 +130,8 @@ useEffect(() => {
 
   const actualizarTurno = async () => {
     if (!nuevoTurno.id) return;
-
-    if (
-      !nuevoTurno.valor ||
-      isNaN(nuevoTurno.valor) ||
-      Number(nuevoTurno.valor) <= 0
-    ) {
-      alert('Por favor ingresá un valor numérico mayor a cero para el tratamiento.');
+    if (!nuevoTurno.tratamientosAplicados || nuevoTurno.tratamientosAplicados.length === 0) {
+      alert('Debes agregar al menos un tratamiento.');
       return;
     }
 
@@ -165,8 +139,8 @@ useEffect(() => {
     const eventoActualizado = {
       cliente: nuevoTurno.cliente,
       clienteId: nuevoTurno.clienteId,
-      tratamiento: nuevoTurno.tratamiento,
-      valor: Number(nuevoTurno.valor),
+      tratamientosAplicados: nuevoTurno.tratamientosAplicados,
+      valor: nuevoTurno.valor,
       start: nuevoTurno.start.toISOString(),
       end: nuevoTurno.end.toISOString(),
     };
@@ -178,7 +152,7 @@ useEffect(() => {
         ...eventoActualizado,
         start: new Date(nuevoTurno.start),
         end: new Date(nuevoTurno.end),
-        title: `${nuevoTurno.cliente} - ${nuevoTurno.tratamiento}`,
+        title: `${nuevoTurno.cliente} - ${nuevoTurno.tratamientosAplicados.map(t => t.nombre).join(', ')}`,
       } : e)));
       setModalAbierto(false);
     } catch (error) {
@@ -212,9 +186,11 @@ useEffect(() => {
           if (!modalAbierto) handleSelectSlot(slotInfo);
         }}
         onSelectEvent={handleSelectEvent}
-        tooltipAccessor={(event) =>
-          `Cliente: ${event.cliente}\nTratamiento: ${event.tratamiento}\nValor: $${event.valor}`
-        }
+        tooltipAccessor={(event) => {
+          if (!event.tratamientosAplicados || event.tratamientosAplicados.length === 0) return '';
+          const lista = event.tratamientosAplicados.map(t => `• ${t.nombre} ($${t.valor})`).join('\n');
+          return `Cliente: ${event.cliente}\n${lista}\nTotal: $${event.valor}`;
+        }}
         culture="es"
         style={{
           height: '100%',
