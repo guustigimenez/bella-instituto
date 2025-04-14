@@ -124,7 +124,33 @@ export default function TurnoForm({
 
       <ul style={{ marginBottom: '20px' }}>
         {(turno.tratamientosAplicados || []).map((t, index) => (
-          <li key={index}>{t.nombre} – ${t.valor}</li>
+          <li
+            key={index}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '5px'
+            }}
+          >
+            <span>{t.nombre} – ${t.valor}</span>
+            <button
+              onClick={() => {
+                const nuevos = turno.tratamientosAplicados.filter((_, i) => i !== index);
+                setTurno(prev => ({ ...prev, tratamientosAplicados: nuevos }));
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#e91e63',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+              }}
+              title="Eliminar tratamiento"
+            >
+              ✕
+            </button>
+          </li>
         ))}
       </ul>
 
