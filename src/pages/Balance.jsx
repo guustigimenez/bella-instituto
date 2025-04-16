@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { format } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function Balance() {
   const [turnos, setTurnos] = useState([]);
@@ -59,8 +63,43 @@ export default function Balance() {
     return valor.toLocaleString('es-AR');
   };
 
+  const exportarExcel = () => {
+    const datos = Object.keys(resumenPorDia).map(fecha => ({
+      Fecha: format(new Date(fecha), 'dd/MM/yyyy'),
+      Recaudado: resumenPorDia[fecha],
+    }));
+
+    const hoja = XLSX.utils.json_to_sheet(datos);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, 'Balance');
+    XLSX.writeFile(libro, 'Balance.xlsx');
+  };
+
+  const exportarPDF = () => {
+    const doc = new jsPDF();
+    doc.text('Balance del Mes', 14, 20);
+  
+    const filas = Object.keys(resumenPorDia).map(fecha => ([
+      format(new Date(fecha), 'dd/MM/yyyy'),
+      `$${formatearMoneda(resumenPorDia[fecha])}`
+    ]));
+  
+    autoTable(doc, {
+      head: [['Fecha', 'Recaudado']],
+      body: filas,
+      startY: 30
+    });
+  
+    doc.save('Balance.pdf');
+  };
+
+  const datosGrafico = Object.keys(resumenPorDia).map(fecha => ({
+    fecha: format(new Date(fecha), 'dd/MM'),
+    valor: resumenPorDia[fecha]
+  }));
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       <h2 className="text-2xl font-bold text-pink-700 mb-6">Balance del Mes</h2>
 
       <div className="flex gap-4 mb-6">
@@ -82,11 +121,30 @@ export default function Balance() {
             <option key={anio} value={anio}>{anio}</option>
           ))}
         </select>
+        <button onClick={exportarExcel} className="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600">
+          Exportar Excel
+        </button>
+        <button onClick={exportarPDF} className="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600">
+          Exportar PDF
+        </button>
       </div>
 
       <div className="bg-white rounded-xl shadow p-4 mb-6">
         <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Recaudado</h3>
         <div className="text-3xl font-bold text-green-600">${formatearMoneda(totalMes)}</div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow p-4 mb-6">
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">Gráfico de Recaudación</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={datosGrafico}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="fecha" />
+            <YAxis tickFormatter={(v) => `$${formatearMoneda(v)}`} />
+            <Tooltip formatter={(value) => `$${formatearMoneda(value)}`} />
+            <Bar dataKey="valor" fill="#e91e63" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       <div className="bg-white rounded-xl shadow p-4">
