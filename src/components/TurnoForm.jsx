@@ -30,12 +30,22 @@ export default function TurnoForm({
   }, [turno]);
 
   useEffect(() => {
-    const total = (turno.tratamientosAplicados || []).reduce(
+    const subtotal = (turno.tratamientosAplicados || []).reduce(
       (acc, t) => acc + Number(t.valor),
       0
     );
-    setTurno((prev) => ({ ...prev, valor: total }));
-  }, [turno.tratamientosAplicados]);
+
+    let total = subtotal;
+    if (turno.tipoDescuento && turno.descuento) {
+      if (turno.tipoDescuento === 'fijo') {
+        total = subtotal - turno.descuento;
+      } else if (turno.tipoDescuento === 'porcentaje') {
+        total = subtotal * (1 - turno.descuento / 100);
+      }
+    }
+
+    setTurno(prev => ({ ...prev, valor: Math.max(0, Math.round(total)) }));
+  }, [turno.tratamientosAplicados, turno.tipoDescuento, turno.descuento]);
 
   return (
     <Modal
@@ -153,6 +163,27 @@ export default function TurnoForm({
           </li>
         ))}
       </ul>
+
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '10px' }}>
+        <select
+          value={turno.tipoDescuento || ''}
+          onChange={(e) => setTurno(prev => ({ ...prev, tipoDescuento: e.target.value }))}
+          style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
+        >
+          <option value="">Sin descuento</option>
+          <option value="fijo">Descuento fijo ($)</option>
+          <option value="porcentaje">Descuento %</option>
+        </select>
+
+        <input
+          type="number"
+          placeholder="Descuento"
+          value={turno.descuento || ''}
+          onChange={(e) => setTurno(prev => ({ ...prev, descuento: parseFloat(e.target.value) || 0 }))}
+          disabled={!turno.tipoDescuento}
+          style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
+        />
+      </div>
 
       <input
         type="number"
