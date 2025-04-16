@@ -1,6 +1,7 @@
 // src/pages/Landing.jsx
 import { motion } from 'framer-motion';
 import CalendarioSemanal from '../components/CalendarioSemanal';
+import TurnosManiana from '../components/TurnosManiana';
 
 export default function Landing() {
   return (
@@ -28,6 +29,8 @@ export default function Landing() {
         <h2 className="text-2xl font-bold text-pink-700 mb-4">📅 Agenda Semanal</h2>
         <CalendarioSemanal />
       </motion.div>
+
+      <TurnosManiana />
     </div>
   );
 }
