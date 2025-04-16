@@ -43,14 +43,14 @@ export default function Clientes() {
           paddingBottom: '0.5rem',
         }}
       >
-        📋 Gestión de Clientes
+        📋 Gestión de Clientes - Total de clientes: {clientes.length}
       </h2>
 
       <ClientForm onClienteAgregado={agregarCliente} />
 
       <hr style={{ margin: '2rem 0', borderColor: '#eee' }} />
 
-      <ClientList clientes={clientes} />
+      <ClientList clientes={[...clientes].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))} />
     </div>
   );
 }
