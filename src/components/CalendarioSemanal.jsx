@@ -205,6 +205,8 @@ export default function CalendarioSemanal() {
           return `Cliente: ${event.cliente}\n${lista}\nTotal: $${event.valor}`;
         }}
         culture="es"
+        min={new Date(2020, 0, 1, 7, 0)} 
+        max={new Date(2020, 0, 1, 22, 0)} 
         style={{
           height: '100%',
           backgroundColor: 'white',
