@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import TurnoForm from './TurnoForm';
+import { guardarHistoriaClinica, eliminarHistoriaClinicaDeTurno } from '../services/historiaClinicaService';
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -123,6 +124,14 @@ export default function CalendarioSemanal() {
         end: nuevoTurno.end.toISOString(),
         creado: new Date().toISOString(),
       });
+
+      await guardarHistoriaClinica(
+        nuevoTurno.clienteId,
+        nuevoTurno.cliente,
+        nuevoTurno.tratamientosAplicados,
+        nuevoTurno.start.toISOString()
+      );
+
       setEventos([...eventos, { ...nuevoEvento, id: docRef.id }]);
       setModalAbierto(false);
     } catch (error) {
@@ -167,6 +176,8 @@ export default function CalendarioSemanal() {
 
     try {
       await deleteDoc(doc(db, 'turnos', nuevoTurno.id));
+
+      await eliminarHistoriaClinicaDeTurno(nuevoTurno.clienteId, nuevoTurno.start.toISOString());
       setEventos(eventos.filter(e => e.id !== nuevoTurno.id));
       setModalAbierto(false);
     } catch (error) {

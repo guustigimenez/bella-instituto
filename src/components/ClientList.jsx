@@ -5,19 +5,21 @@ import {
   HomeIcon,
   CalendarIcon,
   UserIcon,
-  PencilIcon
+  PencilIcon,
+  MessageCircleIcon
 } from 'lucide-react';
 import ModalEditClient from "./ModalEditClient";
 import { actualizarClienteEnFirebase } from '../services/firebase';
 import { toast } from 'react-toastify';
+import HistoriaClinica from './HistoriaClinica';
 
 export default function ClientList({ clientes: clientesProp }) {
   const [clientes, setClientes] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [clienteEditando, setClienteEditando] = useState(null);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [comentarios, setComentarios] = useState({});
 
-  // Actualizar clientes si cambian los props
   useEffect(() => {
     setClientes(clientesProp || []);
   }, [clientesProp]);
@@ -30,12 +32,12 @@ export default function ClientList({ clientes: clientesProp }) {
   const guardarClienteEditado = async (clienteActualizado) => {
     try {
       await actualizarClienteEnFirebase(clienteActualizado);
-  
+
       const nuevosClientes = clientes.map((c) =>
         c.id === clienteActualizado.id ? clienteActualizado : c
       );
       setClientes(nuevosClientes);
-  
+
       toast.success("Cliente actualizado correctamente");
     } catch (error) {
       console.error("Error al actualizar cliente en Firebase:", error);
@@ -108,7 +110,6 @@ export default function ClientList({ clientes: clientesProp }) {
                 )}
               </div>
 
-              {/* Botón editar */}
               <button
                 onClick={() => abrirModal(c)}
                 className="text-blue-600 hover:text-blue-800 transition"
@@ -117,11 +118,14 @@ export default function ClientList({ clientes: clientesProp }) {
                 <PencilIcon size={18} />
               </button>
             </div>
+
+            <div className="mt-4">
+              <HistoriaClinica clienteId={c.id} />
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Modal de edición */}
       <ModalEditClient
         open={modalAbierto}
         onClose={() => setModalAbierto(false)}
