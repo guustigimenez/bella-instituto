@@ -125,13 +125,6 @@ export default function CalendarioSemanal() {
         creado: new Date().toISOString(),
       });
 
-      await guardarHistoriaClinica(
-        nuevoTurno.clienteId,
-        nuevoTurno.cliente,
-        nuevoTurno.tratamientosAplicados,
-        nuevoTurno.start.toISOString()
-      );
-
       setEventos([...eventos, { ...nuevoEvento, id: docRef.id }]);
       setModalAbierto(false);
     } catch (error) {
