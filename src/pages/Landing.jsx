@@ -13,7 +13,7 @@ export default function Landing() {
         className="max-w-5xl mx-auto text-center mb-10"
       >
         <h1 className="text-4xl md:text-5xl font-extrabold text-pink-700 mb-4">
-          Bienvenida a <span className="text-pink-500">Bella AGUANTE CACO</span>
+          Bienvenida a <span className="text-pink-500">Bella</span>
         </h1>
         <p className="text-gray-700 text-lg">
           Gestioná los tratamientos y clientes de tu centro de belleza de forma <span className="font-medium">rápida</span>, <span className="font-medium">ordenada</span> y <span className="font-medium">segura</span>.
